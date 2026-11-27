@@ -9,19 +9,24 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Extract project ZIP
-        run: |
-          unzip -q TabunganSahamku-Android-GitHub.zip -d source
+        run: unzip -q TabunganSahamku-Android-GitHub.zip -d source
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)
+          yes | "$SDKMANAGER" --licenses
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build APK
         uses: gradle/gradle-build-action@v3
@@ -30,7 +35,8 @@ jobs:
           build-root-directory: source/TabunganSahamku
           arguments: assembleDebug
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: TabunganSahamku-APK
           path: source/TabunganSahamku/app/build/outputs/apk/debug/app-debug.apk
