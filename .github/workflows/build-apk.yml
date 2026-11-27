@@ -1,0 +1,36 @@
+name: Build Tabungan Sahamku APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          unzip -q TabunganSahamku-Android-GitHub.zip -d source
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Build APK
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: '8.9'
+          build-root-directory: source/TabunganSahamku
+          arguments: assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TabunganSahamku-APK
+          path: source/TabunganSahamku/app/build/outputs/apk/debug/app-debug.apk
